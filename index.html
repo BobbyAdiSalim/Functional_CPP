@@ -73,9 +73,9 @@ int main() {
     [capture](parameters){body}
   </code></pre>
   <ol>
-    <li><code>capture</code>: a capture list thta captures the local variables that are in the scope of the lambda function, i.e., it gives the lambda expression's body access to local variables defined outside the lambda expression. Can take on several forms:
+    <li><code>capture</code>: a capture list thta captures the local variables that are in the scope of the lambda expression, i.e., it gives the lambda expression's body access to local variables defined outside the lambda expression. Can take on several forms:
     <ul>
-      <li><code>[]</code>: an empty capture list. The lambda function will not capture any variables in its local scope, and cannot access the values or references of any local variables.</li>
+      <li><code>[]</code>: an empty capture list. The lambda expression will not capture any variables in its local scope, and cannot access the values or references of any local variables.</li>
       <li><code>[&]</code>: captures all local variables by reference.</li>
       <li><code>[=]</code>: captures all local variables by value.</li>
       <li><code>[var1, var2, var3, ...]</code>: captures the specified local variables listed in the capture list. Any variable name that is preceded by <code>&</code> is captured by reference. Otherwise, the variables are captured by value by default.</li>
@@ -118,7 +118,7 @@ int main() {
     <code>3</code><br>
   </p>
   <p>
-    In this example, <code>counter</code> is assigned a lambda expression that captures all local variables by reference. The lambda expression's body increments the value of <code>x</code> and prints it to stdout. Since <code>counter</code> is capturing <code>x</code> by reference, it modifies the value of <code>x</code>, incrementing it by 1 every time it is called.
+    In this example, <code>counter</code> is assigned a lambda expression that captures all local variables by reference (<code>counter</code> is a closure; but more on this later). The lambda expression's body increments the value of <code>x</code> and prints it to stdout. Since <code>counter</code> is capturing <code>x</code> by reference, it modifies the value of <code>x</code>, incrementing it by 1 every time it is called.
   </p>
   <p>
     As in other languages we have seen in CSCC24, lambda expressions in C++ can return other functions:
@@ -173,6 +173,83 @@ int main() {
     In this example, <code>counter</code> only captures a copy of the value of <code>x</code>. Therefore, when we call <code>counter</code>, the actual variable <code>x</code> outside of the lambda expression does not change. Hence, when we print the value of <code>x</code>, we still get the original value: <code>0</code>.
   </p>
   <h3>Implementation of Lambda Expressions: Anonymous Functors and Closures</h3>
+  <p>
+    Before learning how lambda expressions are implemented in C++, we need some prerequisite knowledge about functors. In C++, functors are any <code>struct</code> or <code>class</code> that implements the <code>operator()</code> member function. Note that in C++, unlike in C, we have object oriented programming, and a <code>struct</code> is just a <code>class</code> that has a <code>public</code> access specifier by default, (as opposed to <code>class</code>, which  has <code>private</code> access specifier by default.) For example:
+  </p>
+  <pre><code>
+struct mult_by_x {
+  int x;
+  // Constructor; x(val) is equivalent to x = val
+  mult_by_x(int value) : x(value) {}
+  int operator()(int arg) { return x * arg; }
+};
+
+int main() {
+  mult_by_x mult_by_3(3);
+  std::cout << mult_by_3(5) << '\n'; // prints 15
+}
+  </code></pre>
+  <small>file: functor-multiplier.cpp</small>
+  <p>
+    In this example, the <code>struct</code> <code>mult_by_x</code> is a functor, and <code>mult_by_3</code> is an object of the functor that has the value <code>x = 3</code>. By defining the <code>operator()(int arg)</code> function, we are saying that the objects of this class is callable with one argument <code>arg</code> of type <code>int</code>. Notice that this is very similar to how we define lambda functions. The following code:
+  </p>
+  <pre><code>
+int main() {
+  int x = 3;
+  auto mult_by_3 = [x](int arg) { return x * arg; };
+  std::cout << mult_by_3(5) << '\n';  // prints 15
+}
+  </code></pre>
+  <small>lambda-multiplier.cpp</small>
+  <p>
+    does the exact same thing as the previous example, but using lambda expressions. In fact, this is exactly how C++ implements lambda functions! In this example, <code>mult_by_3</code> is a closure (just as in Racket). A lambda expression is similar to a <code>class</code> or <code>struct</code>, and a closure is similar to their objects. When we create a lambda expression, the compiler creates an anonymous class that defines its member variables with the values in the capture list, and defines the <code>operator()</code> member function. We can see this illustrated more clearly by extending a previous example:
+  </p>
+  <pre><code>
+#include &ltiostream&gt
+#include &lttype_traits&gt
+
+int main() {
+  int x = 0;
+  auto counter = [=]() mutable { std::cout << ++x << '\n'; };
+  auto different_counter = [=]() mutable { std::cout << ++x << '\n'; };
+  counter();  // prints 1
+  auto counter1 = counter;
+  auto counter2 = counter;
+  counter1();  // prints 2
+  counter1();  // prints 3
+  counter2();  // prints 2
+  counter2();  // prints 3
+
+  // counter1 and counter2 are of the same class
+  std::cout << "counter1 is the same type as counter2? "
+            << std::is_same<decltype(counter1), decltype(counter2)>::value
+            << '\n';
+
+  // counter and different_counter are of different classes
+  std::cout
+      << "counter is the same type as different_counter? "
+      << std::is_same<decltype(counter), decltype(different_counter)>::value
+      << '\n';
+  std::cout << "x = " << x << '\n';  // prints 'x = 0'
+}
+  </code></pre>
+  <small>file: multiple-counter-mutable.cpp</small>
+  <p>
+    Output:<br>
+    <code>
+      1<br>
+      2<br>
+      3<br>
+      2<br>
+      3<br>
+      counter1 is the same type as counter2? 1<br>
+      counter is the same type as different_counter? 0<br>
+      x = 0  
+    </code>
+  </p>
+  <p>
+    This example creates two identical lambda expressions, which are assigned to <code>counter</code> and <code>different_counter</code>. Every time we create a lambda expression, the compiler will create a different anonymous functor (hence why <code>different_counter</code> and <code>counter</code> has different types). When we assign the lambda expression to a variable, we are creating an instance of the class. When we assign <code>counter1 = counter</code> and <code>counter2 = counter</code>, we are creating copies of the instance <code>counter</code>, and assigning them to <code>counter1</code> and <code>counter2</code>. As you can see, the closures act like separate instances of a class (in fact, that is exactly what they are). All three closures have their own values or copies of <code>x</code>, but they are of the same class or type (this can be seen in the type comparison).
+  </p>
 
   <h2>Map (<code>std::transform</code> in C++)</h2>
   <p>

@@ -20,40 +20,45 @@
   <h2>C++ prerequisites: References and Iterators</h2>
   <h3>References</h3>
   <p>
-    C++ references are similar to pointers in C. The only differences are that syntactically, we treat the variable as if we are passing by value, and there are no <code>NULL</code> value. For example, consider the following code:
+    C++ references are similar to constant pointers in C (not to be confused with pointers to constant values). However, there are important differences between them, namely:code:
+  </p>
+  <ol>
+    <li>Sytnactically we treat references as if we are working with values.</li>
+    <li>We don't have a <code>NULL</code> value.</li>
+  </ol>
+  <p>
+    Consider the following example:
   </p>
   <pre><code>
-    #include &ltiostream&gt // I/O header in C++
-
-    void increment(int &x) {
-      x++;
-    }
-
-    int main() {
-      int x = 0;
-      increment(x);
-      std::cout << x << '\n'; // printing to stdout in C++; prints 1
-      increment(x);
-      std::cout << x << '\n'; // prints 2
-    }
+#include &ltiostream&gt // I/O header in C++
+void increment(int &x) { x++; }
+int main() {
+  int x = 0;
+  increment(x);
+  std::cout << x << '\n';  // printing to stdout in C++; prints 1
+  increment(x);
+  std::cout << x << '\n';  // prints 2
+}
   </code></pre>
+  <small>file: reference.cpp</small>
   <p>
     , which is equivalent to the following:
   </p>
   <pre><code>
-    void increment(int *x) {
-      (*x)++;
-    }
-    
-    int main() {
-      int x = 0;
-      increment(&x);
-      std::cout << x << '\n'; // printing to stdout in C++; prints 1
-      increment(&x);
-      std::cout << x << '\n'; // prints 2
-    }
+void increment(int *x) { (*x)++; }
+
+int main() {
+  int x = 0;
+  increment(&x);
+  std::cout << x << '\n';  // printing to stdout in C++; prints 1
+  increment(&x);
+  std::cout << x << '\n';  // prints 2
+}
   </code></pre>
-  , which uses pointers; both of them prints "<code>1\n2\n</code>".
+  <small>file: pointer.cpp</small>
+  <p>
+    , which uses pointers; both of them prints "<code>1\n2\n</code>".
+  </p>
   <h3>Iterators</h3>
   <p>
     Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequuntur fugit error exercitationem eligendi! Tempore numquam accusantium totam. Ex distinctio, at unde fugit autem omnis, animi maxime harum, tenetur aperiam sit.
@@ -80,7 +85,94 @@
     <li><code>parameters</code>: lambda parameters in the format of (type1 var1, type2 var2, ...); works just like in other languages.</li>
     <li><code>body</code>: the body of the lambda expression; works just like in other languages.</li>
   </ol>
-  
+  <h3>Examples</h3>
+  <p>
+    Unlike other languages we have seen in CSCC24, we need to specify what variables, if any, we want to capture from the local scope of the lambda expression. To illustrate this example, we take a look at the following example:
+  </p>
+  <pre><code>
+int main() {
+  int x = 0;
+  auto print_x = [](){std::cout << x << '\n';}; // Doesn't compile.
+}
+  </code></pre>
+  <small>file: no-capture.cpp</small>
+  <p>
+    This program will result in a compilation error, since <code>x</code> is not captured in the capture list of <code>print_x</code>.
+  </p>
+  <p>
+    Next, we take a look at a counter program made with lambda functions:
+  </p>
+  <pre><code>
+int main() {
+  int x = 0;
+  auto counter = [&]() { std::cout << ++x << '\n'; };
+  // the auto type infers the type of the lambda for us! More on this later.
+  for (int i = 0; i < 3; i++) counter();
+}
+  </code></pre>
+  <small>file: counter.cpp</small>
+  <p>
+    Output:<br>
+    <code>1</code><br>
+    <code>2</code><br>
+    <code>3</code><br>
+  </p>
+  <p>
+    In this example, <code>counter</code> is assigned a lambda expression that captures all local variables by reference. The lambda expression's body increments the value of <code>x</code> and prints it to stdout. Since <code>counter</code> is capturing <code>x</code> by reference, it modifies the value of <code>x</code>, incrementing it by 1 every time it is called.
+  </p>
+  <p>
+    As in other languages we have seen in CSCC24, lambda expressions in C++ can return other functions:
+  </p>
+  <pre><code>
+int main() {
+  auto adder = [](int x) { return [=](int y) { return x + y; }; };
+  auto add_by_5 = adder(5);
+  auto add_by_3 = adder(3);
+  std::cout << add_by_5(3) << '\n'; // prints 8
+  std::cout << add_by_3(3) << '\n'; // prints 6
+}
+  </code></pre>
+  <small>file: adder.cpp</small>
+  <h3>
+    Additional Features
+  </h3>
+  <p>
+    There are additional features to lambda functions in C++ that we haven't seen in any languages introduced in CSCC24, namely the optional return type (<code>-> type1</code>) and <code>mutable</code> specifier. By default, C++ infers the return type. However, we can specify the return type to force a return type, if casting is possible. For example:
+  </p>
+  <pre><code>
+int main() {
+  bool b = true;
+  auto returns_int = [&]() -> int {
+    if (b) return b;
+    return 4;
+  };
+  std::cout << returns_int() << '\n'; // prints 1
+  b = false;
+  std::cout << returns_int() << '\n'; // prints 4
+}
+  </code></pre>
+  <small>file: return-type.cpp</small>
+  <p>
+    Since we specify that the return type of <code>returns_int</code> is an <code>int</code>, we are casting <code>b</code> to an <code>int</code>, hence returning 1.
+  </p>
+  <p>
+    By default, captured values in lambda expressions are immutable. In a previous counter example, we could change the value of <code>x</code> because it was passed by reference; the reference is immutable, but we can change the value (similar to a constant pointer in C). However, we can change this behaviour with the <code>mutable</code> specifier:
+  </p>
+  <pre><code>
+int main() {
+  int x = 0;
+  auto counter = [=]() mutable { std::cout << ++x << '\n'; };
+  // if we don't use mutable -> error, since captured values are immutabe by default
+  counter(); // prints 1
+  counter(); // prints 2
+  std::cout << x << '\n'; // prints 0
+}
+  </code></pre>
+  <small>file: counter-mutable.cpp</small>
+  <p>
+    In this example, <code>counter</code> only captures a copy of the value of <code>x</code>. Therefore, when we call <code>counter</code>, the actual variable <code>x</code> outside of the lambda expression does not change. Hence, when we print the value of <code>x</code>, we still get the original value: <code>0</code>.
+  </p>
+  <h3>Implementation of Lambda Expressions: Anonymous Functors and Closures</h3>
 
   <h2>Map (<code>std::transform</code> in C++)</h2>
   <p>

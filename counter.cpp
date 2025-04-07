@@ -2,8 +2,7 @@
 
 int main() {
   int x = 0;
-  auto counter = [&](){
-    std::cout << ++x << '\n';
-  };
-  for (int i = 0; i < 10; i++) counter();
+  auto counter = [&]() { std::cout << ++x << '\n'; };
+  // the auto type infers the type of the lambda for us! More on this later.
+  for (int i = 0; i < 3; i++) counter();
 }

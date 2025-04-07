@@ -11,19 +11,76 @@
 
   <h2>Introduction</h2>
   <p>
-    This short lesson will discuss functional features in C++, particularly the C++ equivalents of lambda expressions, map (<code>std::transform</code>), filter (<code>std::copy_if</code>), and fold (<code>std::accumulate</code>).
+    This short lesson will discuss functional features in C++, particularly the C++ equivalents of lambda expressions, map (<code>std::transform</code>), filter (<code>std::copy_if</code>), and fold (<code>std::accumulate</code>). We will first go over some prerequisite C++ concepts, then go over the main topic.
   </p>
-  <p>
+  <p> 
     Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis, molestiae praesentium? Necessitatibus, quam sunt earum tempore id asperiores explicabo ipsum dolorum porro architecto vel aut voluptatum harum officia reprehenderit deserunt.
+  </p>
+
+  <h2>C++ prerequisites: References and Iterators</h2>
+  <h3>References</h3>
+  <p>
+    C++ references are similar to pointers in C. The only differences are that syntactically, we treat the variable as if we are passing by value, and there are no <code>NULL</code> value. For example, consider the following code:
+  </p>
+  <pre><code>
+    #include &ltiostream&gt // I/O header in C++
+
+    void increment(int &x) {
+      x++;
+    }
+
+    int main() {
+      int x = 0;
+      increment(x);
+      std::cout << x << '\n'; // printing to stdout in C++; prints 1
+      increment(x);
+      std::cout << x << '\n'; // prints 2
+    }
+  </code></pre>
+  <p>
+    , which is equivalent to the following:
+  </p>
+  <pre><code>
+    void increment(int *x) {
+      (*x)++;
+    }
+    
+    int main() {
+      int x = 0;
+      increment(&x);
+      std::cout << x << '\n'; // printing to stdout in C++; prints 1
+      increment(&x);
+      std::cout << x << '\n'; // prints 2
+    }
+  </code></pre>
+  , which uses pointers; both of them prints "<code>1\n2\n</code>".
+  <h3>Iterators</h3>
+  <p>
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequuntur fugit error exercitationem eligendi! Tempore numquam accusantium totam. Ex distinctio, at unde fugit autem omnis, animi maxime harum, tenetur aperiam sit.
   </p>
 
   <h2>Lambda Expressions</h2>
   <p>
-    As in other functional languages that we have seen in CSCC24, C++ supports lambda functions. Here is the basic syntax of lambda functions in C++:
+    As in other functional languages that we have seen in CSCC24, C++ supports lambda functions.
   </p>
+  <h3>Basic Syntax</h3>
   <pre><code>
     [capture](parameters){body}
   </code></pre>
+  <ol>
+    <li><code>capture</code>: a capture list thta captures the local variables that are in the scope of the lambda function, i.e., it gives the lambda expression's body access to local variables defined outside the lambda expression. Can take on several forms:
+    <ul>
+      <li><code>[]</code>: an empty capture list. The lambda function will not capture any variables in its local scope, and cannot access the values or references of any local variables.</li>
+      <li><code>[&]</code>: captures all local variables by reference.</li>
+      <li><code>[=]</code>: captures all local variables by value.</li>
+      <li><code>[var1, var2, var3, ...]</code>: captures the specified local variables listed in the capture list. Any variable name that is preceded by <code>&</code> is captured by reference. Otherwise, the variables are captured by value by default.</li>
+      <li><code>[&, var1, var2, ...]</code>: captures all local variables that is explicitly listed by value, and captures all other local variables by reference. The listed local variables cannot be preceded by <code>&</code>.</li>
+      <li><code>[=, &var1, &var2, ...]</code>: captures all local variabes that is explicitly listed by reference, and captures all other local variables by value. The listed local variables must be preceded by <code>&</code>.</li>
+    </ul></li>
+    <li><code>parameters</code>: lambda parameters in the format of (type1 var1, type2 var2, ...); works just like in other languages.</li>
+    <li><code>body</code>: the body of the lambda expression; works just like in other languages.</li>
+  </ol>
+  
 
   <h2>Map (<code>std::transform</code> in C++)</h2>
   <p>
@@ -31,8 +88,14 @@
   </p>
 
   <h2>Filter (<code>std::transform</code> in C++)</h2>
+  <p>
+    Lorem ipsum dolor sit amet consectetur adipisicing elit. Reprehenderit quibusdam error facere repudiandae temporibus laboriosam tempora, velit consectetur nobis cum deleniti, praesentium, doloremque enim tempore quae voluptatum quam aperiam consequatur.
+  </p>
   
   <h2>Map (<code>std::transform</code> in C++)</h2>
+  <p>
+    Lorem ipsum dolor sit amet consectetur adipisicing elit. Reprehenderit quibusdam error facere repudiandae temporibus laboriosam tempora, velit consectetur nobis cum deleniti, praesentium, doloremque enim tempore quae voluptatum quam aperiam consequatur.
+  </p>
 
 </body>
 

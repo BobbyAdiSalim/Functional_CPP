@@ -1,4 +1,4 @@
-This is a short article about modern functional features in C++ with some example codes.
+This is a short article about modern functional features in C++ (equivalents of lambda expressions, map, filter, and fold in C++) with some example source codes.
 
 There is one bad example of code that won't compile: no-capture.cpp
 There are two files that uses features from C++20 (ranges-filter.cpp and ranges-transform.cpp) and should be compiled with:

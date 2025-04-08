@@ -1,0 +1,11 @@
+This is a short article about modern functional features in C++
+
+Unless specified otherwise in this file, all source code are compiled using C++17 (default standard for GCC 11 and later) with the following command:
+g++ -Wall -o "file-name.exe" "file-name.cpp"
+or, to specify the standard:
+g++ -Wall -std=c++17 -o "file-name.exe" "file-name.cpp"
+
+There is one bad example of code that won't compile: no-capture.cpp
+There are two files that uses features from C++20 (ranges-filter.cpp and ranges-transform.cpp) and should be compiled with:
+g++ -Wall -std=c++17 -o ranges-filter.exe ranges-filter.cpp
+g++ -Wall -std=c++17 -o ranges-transform.exe ranges-transform.cpp

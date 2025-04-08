@@ -61,8 +61,11 @@ int main() {
     As in other functional languages that we have seen in CSCC24, C++ supports lambda expressions. This section will cover the syntax of lambda expressions in C++ as well as how it is implemented under the hood.
   </p>
   <h3>Basic Syntax</h3>
+  <p>
+    Here is the basic syntax of a lambda expression in C++ [1], [2]:
+  </p>
   <pre><code>
-    [capture](parameters){body}
+[capture](parameters){body}
   </code></pre>
   <ol>
     <li><code>capture</code>: a capture list thta captures the local variables that are in the scope of the lambda expression, i.e., it gives the lambda expression's body access to local variables defined outside the lambda expression. Can take on several forms:
@@ -129,7 +132,7 @@ int main() {
     Additional Features
   </h3>
   <p>
-    There are additional features to lambda functions in C++ that we haven't seen in any languages introduced in CSCC24, namely the optional return type (<code>-> type1</code>) and <code>mutable</code> specifier. By default, C++ infers the return type. However, we can specify the return type to force a return type, if casting is possible. For example:
+    There are additional features to lambda functions in C++ that we haven't seen in any languages introduced in CSCC24, namely the optional return type (<code>-> type1</code>) and <code>mutable</code> specifier [1], [2]. By default, C++ infers the return type. However, we can specify the return type to force a return type, if casting is possible. For example:
   </p>
   <pre><code>
 int main() {
@@ -166,7 +169,7 @@ int main() {
   </p>
   <h3>Implementation of Lambda Expressions: Anonymous Functors and Closures</h3>
   <p>
-    Before learning how lambda expressions are implemented in C++, we need some prerequisite knowledge about functors. In C++, functors are any <code>struct</code> or <code>class</code> that implements the <code>operator()</code> member function. Note that in C++, unlike in C, we have object oriented programming, and a <code>struct</code> is just a <code>class</code> that has a <code>public</code> access specifier by default, (as opposed to <code>class</code>, which  has <code>private</code> access specifier by default.) For example:
+    Before learning how lambda expressions are implemented in C++, we need some prerequisite knowledge about functors (or function objects). In C++, functors are any <code>struct</code> or <code>class</code> that implements the <code>operator()</code> member function [1]. Note that in C++, unlike in C, we have object oriented programming, and a <code>struct</code> is just a <code>class</code> that has a <code>public</code> access specifier by default, (as opposed to <code>class</code>, which  has <code>private</code> access specifier by default.) For example:
   </p>
   <pre><code>
 struct mult_by_x {
@@ -194,7 +197,7 @@ int main() {
   </code></pre>
   <small>lambda-multiplier.cpp</small>
   <p>
-    does the exact same thing as the previous example, but using lambda expressions. In fact, this is exactly how C++ implements lambda functions! In this example, <code>mult_by_3</code> is a closure (just as in Racket). A lambda expression is similar to a <code>class</code> or <code>struct</code>, and a closure is similar to their instances or objects. When we create a lambda expression, during compilation, the compiler creates an anonymous class that defines its member variables with the values in the capture list, and defines the <code>operator()</code> member function. We can see this illustrated more clearly by extending a previous example:
+    does the exact same thing as the previous example, but using lambda expressions. In fact, this is exactly how C++ implements lambda functions [3]! In this example, <code>mult_by_3</code> is a closure (just as in Racket). A lambda expression is similar to a <code>class</code> or <code>struct</code>, and a closure is similar to their instances or objects. When we create a lambda expression, during compilation, the compiler creates an anonymous class that defines its member variables with the values in the capture list, and defines the <code>operator()</code> member function. We can see this illustrated more clearly by extending a previous example:
   </p>
   <pre><code>
 #include &ltiostream&gt
@@ -240,12 +243,12 @@ int main() {
     </code>
   </p>
   <p>
-    This example creates two identical lambda expressions, which are assigned to <code>counter</code> and <code>different_counter</code>. Every time we create a lambda expression, the compiler will create a different anonymous functor (hence why <code>different_counter</code> and <code>counter</code> has different types). When we assign the lambda expression to a variable, we are creating an instance of the class during runtime. When we assign <code>counter1 = counter</code> and <code>counter2 = counter</code>, we are creating copies of the instance <code>counter</code>, and assigning them to <code>counter1</code> and <code>counter2</code>. As you can see, the closures act like separate instances of a class (in fact, that is exactly what they are). All three closures have their own values or copies of <code>x</code>, but they are of the same class or type (this can be seen in the type comparison).
+    This example creates two identical lambda expressions, which are assigned to <code>counter</code> and <code>different_counter</code>. Every time we create a lambda expression, the compiler will create a different anonymous functor [3] (hence why <code>different_counter</code> and <code>counter</code> has different types). When we assign the lambda expression to a variable, we are creating an instance of the class during runtime. When we assign <code>counter1 = counter</code> and <code>counter2 = counter</code>, we are creating copies of the instance <code>counter</code>, and assigning them to <code>counter1</code> and <code>counter2</code>. As you can see, the closures act like separate instances of a class (in fact, that is exactly what they are) [3]. All three closures have their own values or copies of <code>x</code>, but they are of the same class or type (this can be seen in the type comparison).
   </p>
 
   <h2>C++ Prerequisites: Iterators</h2>
   <p>
-    In C++, all STL (standard template library) containers implement iterators. Iterators are an generalization of pointers, that can be incremented or decremented to access the next or previous element, or dereferenced to access the element's value. While those operations on pointers would only work with data structures that is implemented with an array, iterators remove that barrier and gives a universal way of iterating through elements of a container. Therefore, iterators removes the need to have separate algorithms for different STL containers. Here is an example program:
+    In C++, all STL (standard template library) containers implement iterators. Iterators are an generalization of pointers, that can be incremented or decremented to access the next or previous element, or dereferenced to access the element's value [1]. While those operations on pointers would only work with data structures that is implemented with an array, iterators remove that barrier and gives a universal way of iterating through elements of a container. Therefore, iterators removes the need to have separate algorithms for different STL containers [1]. Here is an example program:
   </p>
   <pre><code>
 #include &ltdeque&gt  // double-ended queue
@@ -291,12 +294,12 @@ int main() {
 
   <h2>C++ Prerequisites: Ranges and Views</h2>
   <p>
-    In C++, a range is an abstraction of any container type that has <code>begin</code> and <code>end</code> iterators. For example, <code>vector</code>, <code>deque</code>, and <code>list</code> are all ranges. On the other hand, a view does not hold any data; it is "non-owning". We can apply transformations to a view, but it will do so lazily; it will apply the transformation when we request the data, without actually modifying the original data. We will go over some examples in the following topics on map and filter.
+    In C++, a range is an abstraction of any container type that has <code>begin</code> and <code>end</code> iterators [4], [5]. For example, <code>vector</code>, <code>deque</code>, and <code>list</code> are all ranges. On the other hand, a view does not hold any data; it is "non-owning". We can apply transformations to a view, but it will do so lazily; it will apply the transformation when we request the data, without actually modifying the original data. We will go over some examples in the following topics on map and filter.
   </p>
 
   <h2>Map (<code>std::transform</code> and <code>std::for_each</code> in C++)</h2>
   <p>
-    There are multiple functions in C++ that are equivalent to the map function that we have seen in CSCC24, e.g., <code>std::transform</code> and <code>std::for_each</code>, which are defined in the <code>&ltalgorithm></code> header file. We will discuss both of these functions.
+    There are multiple functions in C++ that are equivalent to the map function that we have seen in CSCC24, e.g., <code>std::transform</code> and <code>std::for_each</code> [1], [6], [7], which are defined in the <code>&ltalgorithm></code> header file. We will discuss both of these functions.
   </p>
   <p>
     <code>std::transform</code> is an overloaded function; it can accept one or two containers as the input and outputs the mapped result into a new container. The general syntax is as follows:
@@ -387,7 +390,7 @@ int main() {
   </p>
 
   <p>
-    In C++20, we can use the <code>ranges</code> library, and use the <code>std::ranges::views::transform</code> function, which uses lazy evaluation; it only evaluates the transformation when the element is accessed or requested. This is different than <code>std::transform</code> and <code>std::for_each</code>, which does eager evaluation (evaluates as soon as the function is called). Here we provide one example:
+    In C++20, we can use the <code>ranges</code> library, and use the <code>std::ranges::views::transform</code> function, which uses lazy evaluation [5], [8]; it only evaluates the transformation when the element is accessed or requested. This is different than <code>std::transform</code> and <code>std::for_each</code>, which does eager evaluation (evaluates as soon as the function is called). Here we provide one example:
   </p>
   <pre><code>
 // compile using -std=c++20
@@ -414,7 +417,7 @@ int main() {
 
   <h2>Filter (<code>std::copy_if</code> in C++)</h2>
   <p>
-    In C++, the filter function is implemented by <code>std::copy_if</code>, which is defined in the <code>&ltalgorithm></code> header file. Similar to <code>std::transform</code>, it accepts two input iterators, one at the beginning and one at the end of the input container, one output iterator to the beginning of the output iterator, and a unary predicate (a function that accepts one argument and returns a <code>bool</code>). The predicate must not modify the original elements; otherwise, it will result in undefined behaviour. Also similar to <code>std::transform</code>, it returns an output iterator to the element after the last copied element. Here is the general syntax and two uses of the function:
+    In C++, the filter function is implemented by <code>std::copy_if</code>, which is defined in the <code>&ltalgorithm></code> header file [9]. Similar to <code>std::transform</code>, it accepts two input iterators, one at the beginning and one at the end of the input container, one output iterator to the beginning of the output iterator, and a unary predicate (a function that accepts one argument and returns a <code>bool</code>). The predicate must not modify the original elements; otherwise, it will result in undefined behaviour. Also similar to <code>std::transform</code>, it returns an output iterator to the element after the last copied element. Here is the general syntax and two uses of the function:
   </p>
   <pre><code>
 std::copy_if(input1StartIterator, input1EndIterator, outputStartIterator, unaryPredicate)
@@ -462,7 +465,7 @@ int main() {
     As in other implementations of filter in the languages we have seen, this function copies the values if and only if it satisfies the given predicate.
   </p>
   <p>
-    In C++20, with the <code>ranges</code> library, we can use the <code>std::ranges::views::filter</code> function, which, like <code>std::ranges::views::transform</code>, uses lazy evaluation. Here is an example program:
+    In C++20, with the <code>ranges</code> library, we can use the <code>std::ranges::views::filter</code> function, which, like <code>std::ranges::views::transform</code>, uses lazy evaluation [3], [10]. Here is an example program:
   </p>
   <pre><code>
 // compile using -std=c++20
@@ -488,7 +491,7 @@ int main() {
   
   <h2>Fold (<code>std::accumulate</code> in C++)</h2>
   <p>
-    In C++, the fold function is implemented by <code>std::accumulate</code>, which is defined in the <code>&ltnumeric></code> header file. It accepts three or four arguments: the start and end input iterators, an identity or initial element, and optionally, a binary function. If the binary function is not given, it will use the <code>+</code> operator. If the given operator modifies the original elements, it will result in undefined behaviour. Here is the general syntax and some examples:
+    In C++, the fold function is implemented by <code>std::accumulate</code>, which is defined in the <code>&ltnumeric></code> header file [11]. It accepts three or four arguments: the start and end input iterators, an identity or initial element, and optionally, a binary function. If the binary function is not given, it will use the <code>+</code> operator. If the given operator modifies the original elements, it will result in undefined behaviour. Here is the general syntax and some examples:
   </p>
   <pre><code>
 std::accumulate(inputStartIterator, inputEndIterator, init, binaryOperator // optional)
@@ -538,13 +541,30 @@ int main() {
     </code>
   </p>
   <p>
-    C++23 defines two fold operations in the <code>ranges</code> library: <code>std::ranges::fold_left</code> and <code>std::ranges::fold_right</code>. However, I could not test these functions myself since my compiler has not supported them.
+    C++23 defines two fold operations in the <code>ranges</code> library: <code>std::ranges::fold_left</code> and <code>std::ranges::fold_right</code> [12], [13]. However, I could not test these functions myself since my compiler has not supported them.
   </p>
 
   <h2>Conclusion</h2>
   <p>
     While C++ is mainly an object-oriented imperative programming language, it has implemented several functional features. This article has explored functional programming features in C++, focusing on lambda expressions, and the equivalents of map, filter, and fold in C++. We went over STL algorithms that implement these functions (<code>std::transform</code>,<code>std::for_each</code>,  <code>std::copy_if</code>, and <code>std::accumulate</code>) and some examples of using newer C++ concepts in ranges and views.
   </p>
+
+  <h2>References</h2>
+  <ol>
+    <li>[1] B. Stroustrup, The C++ Programming Language, Fourth Edition. Addison-Wesley Professional, 2013.</li>
+    <li>[2] “Lambda expressions (since C++11),” cppreference.com, https://en.cppreference.com/w/cpp/language/lambda (accessed Apr. 7, 2025).</li>
+    <li>[3] S. Meyers, “Lambdas vs. closures,” Lambdas vs. Closures, https://scottmeyers.blogspot.com/2013/05/lambdas-vs-closures.html (accessed Apr. 7, 2025). </li>
+    <li>[4] “Ranges library (since C++20),” cppreference.com, https://en.cppreference.com/w/cpp/ranges (accessed Apr. 7, 2025).</li>
+    <li>[5] H. Hauswedell, “A beginner’s guide to C++ ranges and views.,” Hannes Hauswedell, https://hannes.hauswedell.net/post/2019/11/30/range_intro/ (accessed Apr. 7, 2025).</li>
+    <li>[6] “Std::Transform,” cppreference.com, https://en.cppreference.com/w/cpp/algorithm/transform (accessed Apr. 7, 2025).</li>
+    <li>[7] “Std::for_each,” cppreference.com, https://en.cppreference.com/w/cpp/algorithm/for_each (accessed Apr. 7, 2025).</li>
+    <li>[8] “Std::Ranges::Views::Transform, std::ranges::transform_view,” cppreference.com, https://en.cppreference.com/w/cpp/ranges/transform_view (accessed Apr. 7, 2025).</li>
+    <li>[9] “STD::Copy, STD::COPY_IF,” cppreference.com, https://en.cppreference.com/w/cpp/algorithm/copy (accessed Apr. 7, 2025).</li>
+    <li>[10] “Std::Ranges::views::Filter, std::ranges::filter_view,” cppreference.com, https://en.cppreference.com/w/cpp/ranges/filter_view (accessed Apr. 7, 2025).</li>
+    <li>[11] “STD::Accumulate,” cppreference.com, https://en.cppreference.com/w/cpp/algorithm/accumulate (accessed Apr. 7, 2025).</li>
+    <li>[12] “Std::Ranges::fold_left,” cppreference.com, https://en.cppreference.com/w/cpp/algorithm/ranges/fold_left (accessed Apr. 7, 2025).</li>
+    <li>[13] “Std::Ranges::fold_right,” cppreference.com, https://en.cppreference.com/w/cpp/algorithm/ranges/fold_right (accessed Apr. 7, 2025).</li>
+  </ol>
 
 </body>
 

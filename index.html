@@ -11,20 +11,16 @@
 
   <h2>Introduction</h2>
   <p>
-    This short lesson will discuss functional features in C++, particularly the C++ equivalents of lambda expressions, map (<code>std::transform</code>), filter (<code>std::copy_if</code>), and fold (<code>std::accumulate</code>). We will first go over some prerequisite C++ concepts, then go over the main topic.
-  </p>
-  <p> 
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis, molestiae praesentium? Necessitatibus, quam sunt earum tempore id asperiores explicabo ipsum dolorum porro architecto vel aut voluptatum harum officia reprehenderit deserunt.
+    This article will discuss functional features in C++, particularly the C++ equivalents of lambda expressions, map, filter, and fold. While there are many C++ STL functions that implement those operations, this lesson will focus more on the older implementations (<code>std::transform</code>, <code>std::for_each</code>, <code>std::copy_if</code>, and <code>std::accumulate</code>). I initially wanted to focus more on the <code>ranges</code> library, which is a newer C++ library introduced in C++20 and is more similar to Stream in Java. However, some features such as fold is an even newer function introduced in C++23, which most compilers (including mine <code>:D</code>) has not supported yet. However, we will still go over a few examples using these new features. I will introduce the relevant prerequisite C++ concepts as we discuss the main topics. 
   </p>
 
-  <h2>C++ prerequisites: References and Iterators</h2>
-  <h3>References</h3>
+  <h2>C++ Prerequisites: References</h2>
   <p>
-    C++ references are similar to constant pointers in C (not to be confused with pointers to constant values). However, there are important differences between them, namely:code:
+    C++ references are similar to constant pointers in C (not to be confused with pointers to constant values). However, there are important differences between them, namely:
   </p>
   <ol>
-    <li>Sytnactically we treat references as if we are working with values.</li>
-    <li>We don't have a <code>NULL</code> value.</li>
+    <li>Syntactically, we treat references as if we are working with values.</li>
+    <li>References don't have a <code>NULL</code> value.</li>
   </ol>
   <p>
     Consider the following example:
@@ -59,14 +55,10 @@ int main() {
   <p>
     , which uses pointers; both of them prints "<code>1\n2\n</code>".
   </p>
-  <h3>Iterators</h3>
-  <p>
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequuntur fugit error exercitationem eligendi! Tempore numquam accusantium totam. Ex distinctio, at unde fugit autem omnis, animi maxime harum, tenetur aperiam sit.
-  </p>
 
   <h2>Lambda Expressions</h2>
   <p>
-    As in other functional languages that we have seen in CSCC24, C++ supports lambda functions.
+    As in other functional languages that we have seen in CSCC24, C++ supports lambda expressions. This section will cover the syntax of lambda expressions in C++ as well as how it is implemented under the hood.
   </p>
   <h3>Basic Syntax</h3>
   <pre><code>
@@ -202,7 +194,7 @@ int main() {
   </code></pre>
   <small>lambda-multiplier.cpp</small>
   <p>
-    does the exact same thing as the previous example, but using lambda expressions. In fact, this is exactly how C++ implements lambda functions! In this example, <code>mult_by_3</code> is a closure (just as in Racket). A lambda expression is similar to a <code>class</code> or <code>struct</code>, and a closure is similar to their objects. When we create a lambda expression, the compiler creates an anonymous class that defines its member variables with the values in the capture list, and defines the <code>operator()</code> member function. We can see this illustrated more clearly by extending a previous example:
+    does the exact same thing as the previous example, but using lambda expressions. In fact, this is exactly how C++ implements lambda functions! In this example, <code>mult_by_3</code> is a closure (just as in Racket). A lambda expression is similar to a <code>class</code> or <code>struct</code>, and a closure is similar to their instances or objects. When we create a lambda expression, during compilation, the compiler creates an anonymous class that defines its member variables with the values in the capture list, and defines the <code>operator()</code> member function. We can see this illustrated more clearly by extending a previous example:
   </p>
   <pre><code>
 #include &ltiostream&gt
@@ -248,22 +240,310 @@ int main() {
     </code>
   </p>
   <p>
-    This example creates two identical lambda expressions, which are assigned to <code>counter</code> and <code>different_counter</code>. Every time we create a lambda expression, the compiler will create a different anonymous functor (hence why <code>different_counter</code> and <code>counter</code> has different types). When we assign the lambda expression to a variable, we are creating an instance of the class. When we assign <code>counter1 = counter</code> and <code>counter2 = counter</code>, we are creating copies of the instance <code>counter</code>, and assigning them to <code>counter1</code> and <code>counter2</code>. As you can see, the closures act like separate instances of a class (in fact, that is exactly what they are). All three closures have their own values or copies of <code>x</code>, but they are of the same class or type (this can be seen in the type comparison).
+    This example creates two identical lambda expressions, which are assigned to <code>counter</code> and <code>different_counter</code>. Every time we create a lambda expression, the compiler will create a different anonymous functor (hence why <code>different_counter</code> and <code>counter</code> has different types). When we assign the lambda expression to a variable, we are creating an instance of the class during runtime. When we assign <code>counter1 = counter</code> and <code>counter2 = counter</code>, we are creating copies of the instance <code>counter</code>, and assigning them to <code>counter1</code> and <code>counter2</code>. As you can see, the closures act like separate instances of a class (in fact, that is exactly what they are). All three closures have their own values or copies of <code>x</code>, but they are of the same class or type (this can be seen in the type comparison).
   </p>
 
-  <h2>Map (<code>std::transform</code> in C++)</h2>
+  <h2>C++ Prerequisites: Iterators</h2>
   <p>
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Reprehenderit quibusdam error facere repudiandae temporibus laboriosam tempora, velit consectetur nobis cum deleniti, praesentium, doloremque enim tempore quae voluptatum quam aperiam consequatur.
+    In C++, all STL (standard template library) containers implement iterators. Iterators are an generalization of pointers, that can be incremented or decremented to access the next or previous element, or dereferenced to access the element's value. While those operations on pointers would only work with data structures that is implemented with an array, iterators remove that barrier and gives a universal way of iterating through elements of a container. Therefore, iterators removes the need to have separate algorithms for different STL containers. Here is an example program:
+  </p>
+  <pre><code>
+#include &ltdeque&gt  // double-ended queue
+#include &ltiostream&gt
+#include &ltset&gt
+#include &ltvector&gt
+
+// similar to a generic function in Java
+template &lttypename Iterator&gt
+void iterate(Iterator begin, Iterator end) {
+  for (auto it = begin; it != end; it++) {
+    std::cout << *it << '\n';
+  }
+}
+
+int main() {
+  std::vector&ltint&gt num_vector = {1, 2, 3};
+  std::deque&ltint&gt num_deque = {4, 5, 6};
+  std::set&ltint&gt num_set = {7, 8, 9};
+  iterate(num_vector.begin(), num_vector.end());
+  iterate(num_deque.begin(), num_deque.end());
+  iterate(num_set.begin(), num_set.end());
+}
+  </code></pre>
+  <small>file: iterators.cpp</small>  
+  <p>
+    Output:<br>
+    <code>
+      1<br>
+      2<br>
+      3<br>
+      4<br>
+      5<br>
+      6<br>
+      7<br>
+      8<br>
+      9
+    </code>
+  </p>
+  <p>
+    Most (or all) of the general STL algorithms in the &ltalgorithms&gt header are defined this way; using iterators to generalize it to any containers that implement iterators.
   </p>
 
-  <h2>Filter (<code>std::transform</code> in C++)</h2>
+  <h2>C++ Prerequisites: Ranges and Views</h2>
   <p>
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Reprehenderit quibusdam error facere repudiandae temporibus laboriosam tempora, velit consectetur nobis cum deleniti, praesentium, doloremque enim tempore quae voluptatum quam aperiam consequatur.
+    In C++, a range is an abstraction of any container type that has <code>begin</code> and <code>end</code> iterators. For example, <code>vector</code>, <code>deque</code>, and <code>list</code> are all ranges. On the other hand, a view does not hold any data; it is "non-owning". We can apply transformations to a view, but it will do so lazily; it will apply the transformation when we request the data, without actually modifying the original data. We will go over some examples in the following topics on map and filter.
+  </p>
+
+  <h2>Map (<code>std::transform</code> and <code>std::for_each</code> in C++)</h2>
+  <p>
+    There are multiple functions in C++ that are equivalent to the map function that we have seen in CSCC24, e.g., <code>std::transform</code> and <code>std::for_each</code>, which are defined in the <code>&ltalgorithm></code> header file. We will discuss both of these functions.
+  </p>
+  <p>
+    <code>std::transform</code> is an overloaded function; it can accept one or two containers as the input and outputs the mapped result into a new container. The general syntax is as follows:
+  </p>
+  <pre><code>
+std::transform(input1StartIterator, input1EndIterator, outputStartIterator, unaryOperator)
+std::transform(input1StartIterator, input1EndIterator, input2StartIterator, outputStartIterator, unaryOperator)
+  </code></pre>
+  <p>
+    The output container is passed in the argument with the iterator <code>outputStartIterator</code>. Both versions of <code>transform</code> returns the output iterator to the element after the last transformed element. If we have two inputs, <code>std::transform</code> will iterate until it hits <code>input1EndIterator</code>. If the second input hits end before this, it will result in undefined behaviour; input1 must be the smaller input. Similarly, if the output container is not large enough, it will also result in undefined behaviour. In addition, the operator must not modify the original elements; otherwise, it will result in undefined behaviour. The following program demonstrates both versions:
+  </p>
+  <pre><code>
+#include &ltalgorithm&gt
+#include &ltiostream&gt
+#include &ltvector&gt
+
+template &lttypename Iterator&gt
+void iterate(Iterator begin, Iterator end) {
+  for (auto it = begin; it != end; it++) {
+    std::cout << *it << '\n';
+  }
+}
+
+int main() {
+  std::vector&ltint&gt nums = {1, 2, 3};
+  std::vector&ltint&gt doublenums(nums.size());  // allocate size = nums1.size()
+  // doubles every element of nums and store in doublenums
+  std::transform(nums.begin(), nums.end(), doublenums.begin(),
+                 [](int x) { return 2 * x; });
+  std::cout << "elements of doublenums: \n";
+  iterate(doublenums.begin(), doublenums.end());
+
+  std::vector&ltint&gt triplenums(nums.size());
+  // add elements of nums and doublenums by index, store in triplenums
+  std::transform(nums.begin(), nums.end(), doublenums.begin(),
+                 triplenums.begin(), [](int x, int y) { return x + y; });
+  std::cout << "elements of triplenums: \n";
+  iterate(triplenums.begin(), triplenums.end());
+}
+  </code></pre>
+  <small>file: transform.cpp</small>
+  <p>
+    Output:<br>
+    <code>
+      elements of doublenums: <br>
+      2 <br>
+      4 <br>
+      6 <br>
+      elements of triplenums: <br>
+      3 <br>
+      6 <br>
+      9 <br>
+    </code>
+  </p>
+  <p>
+    <code>std::transform</code> works similar to map in other languages. It transforms the elements of the input container using the given operator, and stores it into the output container. On the other hand, <code>std::for_each</code> is a function that transforms the elements in-place. The lambda expression that we give must return void and modify the input by reference instead of returning the output. Here is the syntax for <code>std::for_each</code> and an example program:
+  </p>
+  <pre><code>
+std::for_each(inputStartIterator, inputEndIterator, unaryOperator)
+
+#include &ltalgorithm&gt
+#include &ltiostream&gt
+#include &ltvector&gt
+
+template &lttypename Iterator&gt
+void iterate(Iterator begin, Iterator end) {
+  for (auto it = begin; it != end; it++) {
+    std::cout << *it << '\n';
+  }
+}
+
+int main() {
+  std::vector&ltint&gt nums = {1, 2, 3};
+  std::for_each(nums.begin(), nums.end(), [](int &x) { x++; });
+  std::cout << "elements of nums: \n";
+  iterate(nums.begin(), nums.end());
+}
+  </code></pre>
+  <small>file: for_each.cpp</small>
+  <p>
+    Output:<br>
+    <code>
+      elements of nums: <br>
+      2 <br>
+      3 <br>
+      4 <br>
+    </code>
+  </p>
+
+  <p>
+    In C++20, we can use the <code>ranges</code> library, and use the <code>std::ranges::views::transform</code> function, which uses lazy evaluation; it only evaluates the transformation when the element is accessed or requested. This is different than <code>std::transform</code> and <code>std::for_each</code>, which does eager evaluation (evaluates as soon as the function is called). Here we provide one example:
+  </p>
+  <pre><code>
+// compile using -std=c++20
+#include &ltiostream&gt
+#include &ltranges&gt
+#include &ltvector&gt
+
+int main() {
+  std::vector&ltint&gt nums = {1, 2, 3};
+  auto mult2 =
+      nums | std::ranges::views::transform([](int x) { return 2 * x; });
+  for (auto i : mult2) std::cout << i << '\n';
+}
+  </code></pre>
+  <small>file: ranges-transform.cpp</small>
+  <p>
+    Output:<br>
+    <code>
+      2 <br>
+      4 <br>
+      6 <br>
+    </code>
+  </p>
+
+  <h2>Filter (<code>std::copy_if</code> in C++)</h2>
+  <p>
+    In C++, the filter function is implemented by <code>std::copy_if</code>, which is defined in the <code>&ltalgorithm></code> header file. Similar to <code>std::transform</code>, it accepts two input iterators, one at the beginning and one at the end of the input container, one output iterator to the beginning of the output iterator, and a unary predicate (a function that accepts one argument and returns a <code>bool</code>). The predicate must not modify the original elements; otherwise, it will result in undefined behaviour. Also similar to <code>std::transform</code>, it returns an output iterator to the element after the last copied element. Here is the general syntax and two uses of the function:
+  </p>
+  <pre><code>
+std::copy_if(input1StartIterator, input1EndIterator, outputStartIterator, unaryPredicate)
+
+#include &ltalgorithm&gt
+#include &ltiostream&gt
+#include &ltvector&gt
+
+template &lttypename Iterator&gt
+void iterate(Iterator begin, Iterator end) {
+  for (auto it = begin; it != end; it++) {
+    std::cout << *it << '\n';
+  }
+}
+
+int main() {
+  std::vector&ltint> num = {1, -4, 4, 7, -2};
+  std::vector&ltint> positive(num.size());
+  std::vector&ltint> even(num.size());
+  auto end_positive = std::copy_if(num.begin(), num.end(), positive.begin(),
+                                   [](int x) { return x > 0; });
+  auto end_even = std::copy_if(num.begin(), num.end(), even.begin(),
+                               [](int x) { return x % 2 == 0; });
+  std::cout << "positive: \n";
+  iterate(positive.begin(), end_positive);
+  std::cout << "even: \n";
+  iterate(even.begin(), end_even);
+}
+  </code></pre>
+  <small>file: copy_if.cpp</small>
+  <p>
+    Output:<br>
+    <code>
+      positive: <br>
+      1 <br>
+      4 <br>
+      7 <br>
+      even: <br>
+      -4 <br>
+      4 <br>
+      -2
+    </code>
+  </p>
+  <p>
+    As in other implementations of filter in the languages we have seen, this function copies the values if and only if it satisfies the given predicate.
+  </p>
+  <p>
+    In C++20, with the <code>ranges</code> library, we can use the <code>std::ranges::views::filter</code> function, which, like <code>std::ranges::views::transform</code>, uses lazy evaluation. Here is an example program:
+  </p>
+  <pre><code>
+// compile using -std=c++20
+#include &ltiostream>
+#include &ltranges>
+#include &ltvector>
+
+int main() {
+  std::vector&ltint> nums = {1, 2, 3, 4, 5};
+  auto even =
+      nums | std::ranges::views::filter([](int x) { return x % 2 == 0; });
+  for (auto i : even) std::cout << i << '\n';
+}
+  </code></pre>
+  <small>file: ranges-filter.cpp</small>
+  <p>
+    Output:<br>
+    <code>
+      2 <br>
+      4
+    </code>
   </p>
   
-  <h2>Map (<code>std::transform</code> in C++)</h2>
+  <h2>Fold (<code>std::accumulate</code> in C++)</h2>
   <p>
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Reprehenderit quibusdam error facere repudiandae temporibus laboriosam tempora, velit consectetur nobis cum deleniti, praesentium, doloremque enim tempore quae voluptatum quam aperiam consequatur.
+    In C++, the fold function is implemented by <code>std::accumulate</code>, which is defined in the <code>&ltnumeric></code> header file. It accepts three or four arguments: the start and end input iterators, an identity or initial element, and optionally, a binary function. If the binary function is not given, it will use the <code>+</code> operator. If the given operator modifies the original elements, it will result in undefined behaviour. Here is the general syntax and some examples:
+  </p>
+  <pre><code>
+std::accumulate(inputStartIterator, inputEndIterator, init, binaryOperator // optional)
+
+#include &ltiostream>
+#include &ltnumeric>
+#include &ltvector>
+
+int main() {
+  std::vector&ltint> nums = {1, 5, 2, 9};
+  int sum = std::accumulate(nums.begin(), nums.end(), 0);
+  int product = std::accumulate(nums.begin(), nums.end(), 1,
+                                [](int x, int y) { return x * y; });
+  std::cout << "sum = " << sum << '\n';
+  std::cout << "product = " << product << '\n';
+}
+  </code></pre>
+  <small>file: accumulate.cpp</small>
+  <p>
+    Output:<br>
+    <code>
+      sum = 17 <br>
+      product = 90
+    </code>
+  </p>
+  <p>
+    The C++ specification specifies the order of applying left fold: for a list of elements E = [e1, e2, ..., en], an initial value init, and a binary operator &#8855, <code>std::accumulate(E.begin(), E.end(), init, &#8855)</code> will return the value of ((..(e1 &#8855 e2) &#8855 e3 &#8855 ..) &#8855 en). The following example illustrates this order with a non-commutative operator:
+  </p>
+  <pre><code>
+#include &ltiostream>
+#include &ltnumeric>
+#include &ltvector>
+
+int main() {
+  std::vector&ltint> nums = {1, 5, 2, 9};
+  // calculates ((((6 - 1) - 5) - 2) - 9) = -11
+  int sub = std::accumulate(nums.begin(), nums.end(), 6,
+                            [](int x, int y) { return x - y; });
+  std::cout << "sub = " << sub << '\n';
+}
+  </code></pre>
+  <small>file: accumulate2.cpp</small>
+  <p>
+    Output:<br>
+    <code>
+      sub = -11
+    </code>
+  </p>
+  <p>
+    C++23 defines two fold operations in the <code>ranges</code> library: <code>std::ranges::fold_left</code> and <code>std::ranges::fold_right</code>. However, I could not test these functions myself since my compiler has not supported them.
+  </p>
+
+  <h2>Conclusion</h2>
+  <p>
+    While C++ is mainly an object-oriented imperative programming language, it has implemented several functional features. This article has explored functional programming features in C++, focusing on lambda expressions, and the equivalents of map, filter, and fold in C++. We went over STL algorithms that implement these functions (<code>std::transform</code>,<code>std::for_each</code>,  <code>std::copy_if</code>, and <code>std::accumulate</code>) and some examples of using newer C++ concepts in ranges and views.
   </p>
 
 </body>

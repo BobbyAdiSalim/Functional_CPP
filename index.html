@@ -243,8 +243,18 @@ int main() {
     </code>
   </p>
   <p>
-    This example creates two identical lambda expressions, which are assigned to <code>counter</code> and <code>different_counter</code>. Every time we create a lambda expression, the compiler will create a different anonymous functor [3] (hence why <code>different_counter</code> and <code>counter</code> has different types). When we assign the lambda expression to a variable, we are creating an instance of the class during runtime. When we assign <code>counter1 = counter</code> and <code>counter2 = counter</code>, we are creating copies of the instance <code>counter</code>, and assigning them to <code>counter1</code> and <code>counter2</code>. As you can see, the closures act like separate instances of a class (in fact, that is exactly what they are) [3]. All three closures have their own values or copies of <code>x</code>, but they are of the same class or type (this can be seen in the type comparison).
+    This example creates two identical lambda expressions, which are assigned to <code>counter</code> and <code>different_counter</code>. Every time we create a lambda expression, the compiler will create a different anonymous functor [3] (hence why <code>different_counter</code> and <code>counter</code> has different types). When we assign the lambda expression to a variable, we are creating an instance of the class during runtime (whose type is inferred by C++ when we use <code>auto</code> keyword). When we assign <code>counter1 = counter</code> and <code>counter2 = counter</code>, we are creating copies of the instance <code>counter</code>, and assigning them to <code>counter1</code> and <code>counter2</code>. As you can see, the closures act like separate instances of a class (in fact, that is exactly what they are) [3]. All three closures have their own values or copies of <code>x</code>, but they are of the same class or type (this can be seen in the type comparison).
   </p>
+  <p>
+    If we have a lambda expression that does not capture anything, we can assign it to a function pointer:
+  </p>
+  <pre><code>
+#include &ltiostream>
+int main() {
+  void (*hello)() = []() { std::cout << "hello\n"; };
+  hello();  // prints "hello\n"
+}
+  </code></pre>
 
   <h2>C++ Prerequisites: Iterators</h2>
   <p>
@@ -547,6 +557,9 @@ int main() {
   <h2>Conclusion</h2>
   <p>
     While C++ is mainly an object-oriented imperative programming language, it has implemented several functional features. This article has explored functional programming features in C++, focusing on lambda expressions, and the equivalents of map, filter, and fold in C++. We went over STL algorithms that implement these functions (<code>std::transform</code>,<code>std::for_each</code>,  <code>std::copy_if</code>, and <code>std::accumulate</code>) and some examples of using newer C++ concepts in ranges and views.
+  </p>
+  <p>
+    If we draw a comparisoin between the functional features of C++ and other languages that we have seen in CSCC24 (Racket, Haskell, Java, Python), we can see some differences due to the nature of C++. With C++, we still have to deal with the differences between values and references, a form of pointers and low level memory management. Furthermore, unlike more pure functional languages such as Haskell and Racket, C++ does not fully conform to referential transparency and the no side effects principle. However, we can see that in recent development, it is trying to implement more modern features in ranges and views, which resembles the Stream class in Java.
   </p>
 
   <h2>References</h2>
